@@ -3,7 +3,7 @@ const video = document.getElementById("video");
 Promise.all([
   faceapi.nets.faceLandmark68Net.loadFromUri("/models"),
   faceapi.nets.faceRecognitionNet.loadFromUri("/models"),
-  faceapi.nets.ssdMobilenetv1.loadFromUri('/models')
+  faceapi.nets.ssdMobilenetv1.loadFromUri("/models"),
 ]).then(startVideo);
 
 function startVideo() {
@@ -21,14 +21,14 @@ function loadLabeledImages() {
     "Thor",
     "Tony Stark",
     "Abdul Muhaimin",
-    "Shabeer"
+    "Shabeer",
   ];
   return Promise.all(
     labels.map(async (label) => {
       const descriptions = [];
       for (let i = 1; i <= 2; i++) {
         const img = await faceapi.fetchImage(
-          `https://raw.githubusercontent.com/WebDevSimplified/Face-Recognition-JavaScript/master/labeled_images/${label}/${i}.jpg`
+          `https://raw.githubusercontent.com/m3tasploit/Face-Recognition-JavaScript/tree/master/labeled_images/${label}/${i}.jpg`
         );
         const detections = await faceapi
           .detectSingleFace(img)
@@ -41,12 +41,14 @@ function loadLabeledImages() {
     })
   );
 }
-
-video.addEventListener("play", async() => {
-  const canvas = faceapi.createCanvasFromMedia(video);
+let canvas;
+video.addEventListener("play", async () => {
+  if (canvas) canvas.remove();
+  canvas = faceapi.createCanvasFromMedia(video);
+  canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
   document.body.append(canvas);
-  const labeledFaceDescriptors = await loadLabeledImages()
-  const faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors, 0.6)
+  const labeledFaceDescriptors = await loadLabeledImages();
+  const faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors, 0.6);
   const displaySize = { width: video.width, height: video.height };
   faceapi.matchDimensions(canvas, displaySize);
   setInterval(async () => {
@@ -55,12 +57,15 @@ video.addEventListener("play", async() => {
       .withFaceLandmarks()
       .withFaceDescriptors();
     const resizedDetections = faceapi.resizeResults(detections, displaySize);
-    const results = resizedDetections.map(d => faceMatcher.findBestMatch(d.descriptor))
-    canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
+    const results = resizedDetections.map((d) =>
+      faceMatcher.findBestMatch(d.descriptor)
+    );
     results.forEach((result, i) => {
-      const box = resizedDetections[i].detection.box
-      const drawBox = new faceapi.draw.DrawBox(box, { label: result.toString() })
-      drawBox.draw(canvas)
-    })
+      const box = resizedDetections[i].detection.box;
+      const drawBox = new faceapi.draw.DrawBox(box, {
+        label: result.toString(),
+      });
+      drawBox.draw(canvas);
+    });
   }, 200);
 });
