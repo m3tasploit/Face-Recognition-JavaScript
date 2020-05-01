@@ -28,7 +28,7 @@ function loadLabeledImages() {
       const descriptions = [];
       for (let i = 1; i <= 2; i++) {
         const img = await faceapi.fetchImage(
-          `https://raw.githubusercontent.com/m3tasploit/Face-Recognition-JavaScript/tree/master/labeled_images/${label}/${i}.jpg`
+          `https://raw.githubusercontent.com/m3tasploit/Face-Recognition-JavaScript/master/labeled_images/${label}/${i}.jpg`
         );
         const detections = await faceapi
           .detectSingleFace(img)
@@ -41,11 +41,9 @@ function loadLabeledImages() {
     })
   );
 }
-let canvas;
+
 video.addEventListener("play", async () => {
-  if (canvas) canvas.remove();
-  canvas = faceapi.createCanvasFromMedia(video);
-  canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
+  const canvas = faceapi.createCanvasFromMedia(video);
   document.body.append(canvas);
   const labeledFaceDescriptors = await loadLabeledImages();
   const faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors, 0.6);
@@ -60,6 +58,8 @@ video.addEventListener("play", async () => {
     const results = resizedDetections.map((d) =>
       faceMatcher.findBestMatch(d.descriptor)
     );
+    canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
+
     results.forEach((result, i) => {
       const box = resizedDetections[i].detection.box;
       const drawBox = new faceapi.draw.DrawBox(box, {
@@ -67,5 +67,5 @@ video.addEventListener("play", async () => {
       });
       drawBox.draw(canvas);
     });
-  }, 200);
+  }, 100);
 });
