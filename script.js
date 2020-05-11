@@ -28,7 +28,7 @@ function loadLabeledImages() {
       const descriptions = [];
       for (let i = 1; i <= 2; i++) {
         const img = await faceapi.fetchImage(
-          `http://localhost/Face-Detection-JavaScript/labeled_images/${label}/${i}.jpg`
+          `http://localhost/Face-Recognition-JavaScript/labeled_images/${label}/${i}.jpg`
         );
         const detections = await faceapi
           .detectSingleFace(img)
